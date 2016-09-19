@@ -1,7 +1,9 @@
-from __future__ import division
 import numpy as np
 from math import *
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
+import sys
 
 cAUD = 173.144632674
 timeEpoch = 2457597.125
@@ -10,7 +12,7 @@ mu = 1.0
 ecA = radians(23.434)
 asteroidDes = '1994PN'
 
-data = np.loadtxt("AlexanderDavenportinput.txt", dtype='object')
+data = np.loadtxt(str(sys.argv[1]), dtype='bytes').astype(str)
 
 #sexagesimal to decimal
 def sexToDecimal(ang, hparam):
@@ -102,22 +104,24 @@ def babyOD(r, rdot, t2, tE, param):
 
 
 #parse data
+ndata = np.empty([4, 7], dtype='float')
 for row in range(data.shape[0]):
-    data[row,0] = float(getJD(getJo(data[row,0]),data[row,1]))
-    data[row,2] = radians(sexToDecimal(data[row,2], True))
-    data[row,3] = radians(sexToDecimal(data[row,3], False))
-    data[row,4] = float(data[row,4])
-    data[row,5] = float(data[row,5])
-    data[row,6] = float(data[row,6])
+    ndata[row,0] = float(getJD(getJo(data[row,0]),data[row,1]))
+    ndata[row,2] = radians(sexToDecimal(data[row,2], True))
+    ndata[row,3] = radians(sexToDecimal(data[row,3], False))
+    ndata[row,4] = float(data[row,4])
+    ndata[row,5] = float(data[row,5])
+    ndata[row,6] = float(data[row,6])
 
 #define data structure
-timeArray = np.copy(data[:,0])
-raArray = np.copy(data[:,2])
-decArray = np.copy(data[:,3])
-R1 = np.array([data[0,4],data[0,5],data[0,6]])
-R2 = np.array([data[1,4],data[1,5],data[1,6]])
-R3 = np.array([data[2,4],data[2,5],data[2,6]])
-R4 = np.array([data[3,4],data[3,5],data[3,6]])
+
+timeArray = np.copy(ndata[:,0])
+raArray = np.copy(ndata[:,2])
+decArray = np.copy(ndata[:,3])
+R1 = np.array([ndata[0,4],ndata[0,5],ndata[0,6]])
+R2 = np.array([ndata[1,4],ndata[1,5],ndata[1,6]])
+R3 = np.array([ndata[2,4],ndata[2,5],ndata[2,6]])
+R4 = np.array([ndata[3,4],ndata[3,5],ndata[3,6]])
 
 #calculate time intervals
 tau = k*(timeArray[2]-timeArray[0])
@@ -159,7 +163,7 @@ F = np.linalg.norm(R2)**2
 roota = -(A**2 + A*E + F)
 rootb = -(2*A*B + B*E)
 rootc = -(B**2)
-#print roota, rootb, rootc
+
 #get roots and ask user
 coeffs=[rootc,0,0,rootb,0,0,roota,0,1]
 roots=np.polynomial.polynomial.polyroots(coeffs)
@@ -168,13 +172,13 @@ realRoots = []
 for i in range(len(roots)):
     if np.imag(roots[i]) == 0 and np.real(roots[i]) > 0:
         realRoots.append(float(np.real(roots[i])))
-print realRoots
+print(realRoots)
 r = np.arange(0.6, 1.7, 0.01)
 plt.plot(r, r**8 + roota*r**6 + rootb*r**3 + rootc, '-')
 plt.plot(r, r-r, '-')
 plt.plot(realRoots, [0,0,0], 'bs')
 plt.show()
-pick = input("Pick a root to try by index: ")
+pick = eval(input("Pick a root to try by index: "))
 ##pick = 2
 rmag = realRoots[int(pick)]
 
@@ -212,10 +216,10 @@ tau1c = tau1
 tau3c = tau3
 tauc = tau
 
-#ITERATE WOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-print
-print "--------------------------------------------------------------------------"
-print "Let's Iterate this bitch!"
+#Iteration
+print()
+print("--------------------------------------------------------------------------")
+print("Beginning Iteration")
 while abs(rOld-rmag) > tolerance:
     counter += 1
 
@@ -252,7 +256,7 @@ while abs(rOld-rmag) > tolerance:
 ##    z = r2.dot(r2dot)/rmag/rmag
 ##    q = r2dot.dot(r2dot)/rmag/rmag-u
 ##    f1 = 1-
-    
+
     C1 = g3/(f1*g3-f3*g1)
     C3 = -g1/(f1*g3-f3*g1)
     d1 = -f3/(f1*g3-f3*g1)
@@ -271,7 +275,7 @@ while abs(rOld-rmag) > tolerance:
     #debug
     rOld = rmag + 0
     rmag = np.linalg.norm(r2)
-    print "Iteration %s: delta r = %s" % (counter, abs(rmag-rOld))
+    print("Iteration %s: delta r = %s" % (counter, abs(rmag-rOld)))
 
     #light time correction
     tauc = k*((timeArray[2]-rho3/cAUD)-(timeArray[0]-rho1/cAUD))
@@ -281,7 +285,7 @@ while abs(rOld-rmag) > tolerance:
 ##output
 r2dot = k*r2dot
 orbEl = babyOD(r2, r2dot, timeArray[1], timeEpoch, True)
-print
+print()
 
 str1 = """--------------------------------------------------------------------------
 Initial Orbital Determination Results for %s
@@ -316,15 +320,15 @@ w: %s
 Me: %s""" % orbEl #tE, a, e, degrees(i), degrees(o), degrees(w), degrees(Me)
 
 output = str1 + str2
-print output
-print "--------------------------------------------------------------------------"
-print
-printOpt = raw_input("Do you want to save results to file? (y/n): ").lower()
+print(output)
+print("--------------------------------------------------------------------------")
+print()
+printOpt = input("Do you want to save results to file? (y/n): ").lower()
 if printOpt == "y":
     f = open("%s_initialODresults.txt" % asteroidDes, "w")
     f.write(output)
     f.close()
-    print 'File Created!: %s_initialODresults.txt' % asteroidDes
-print
-print "--------------------------------------------------------------------------"
-raw_input("Press any key to exit")
+    print('File Created!: %s_initialODresults.txt' % asteroidDes)
+print()
+print("--------------------------------------------------------------------------")
+input("Press 'Enter' to exit")
