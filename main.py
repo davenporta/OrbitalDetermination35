@@ -4,7 +4,9 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import sys
+import re
 
+#define constants
 cAUD = 173.144632674
 timeEpoch = 2457597.125
 k = 0.01720209895
@@ -12,7 +14,11 @@ mu = 1.0
 ecA = radians(23.434)
 asteroidDes = '1994PN'
 
-data = np.loadtxt(str(sys.argv[1]), dtype='bytes').astype(str)
+#load data
+data = np.loadtxt(str(sys.argv[1]), dtype='bytes', skiprows=1).astype(str)
+with open(str(sys.argv[1]), 'r') as f:
+    asteroidDes = re.search('\((.*)\)', f.readline()).group(1).replace(" ","")
+
 
 #sexagesimal to decimal
 def sexToDecimal(ang, hparam):
@@ -56,6 +62,7 @@ def getJD(date, time):
     UT = sexToDecimal(time, False)
     return date + (UT / 24)
 
+#ecliptic rotation matrix
 def eclRot(vec):
     ecRot = np.array([[1, 0, 0],
                       [0, cos(ecA), sin(ecA)],
@@ -114,7 +121,6 @@ for row in range(data.shape[0]):
     ndata[row,6] = float(data[row,6])
 
 #define data structure
-
 timeArray = np.copy(ndata[:,0])
 raArray = np.copy(ndata[:,2])
 decArray = np.copy(ndata[:,3])
@@ -122,6 +128,7 @@ R1 = np.array([ndata[0,4],ndata[0,5],ndata[0,6]])
 R2 = np.array([ndata[1,4],ndata[1,5],ndata[1,6]])
 R3 = np.array([ndata[2,4],ndata[2,5],ndata[2,6]])
 R4 = np.array([ndata[3,4],ndata[3,5],ndata[3,6]])
+
 
 #calculate time intervals
 tau = k*(timeArray[2]-timeArray[0])
@@ -134,6 +141,7 @@ def hatRhos(rain, decin):
 rhohat1 = hatRhos(raArray[0], decArray[0])
 rhohat2 = hatRhos(raArray[1], decArray[1])
 rhohat3 = hatRhos(raArray[2], decArray[2])
+
 
 ##START TRUNCATED F+G SERIES FOR INITIAL GUESS (subsitutions galore)
 #scalar equations of range pt 1
@@ -160,11 +168,11 @@ B = -((B1*D21)+(B3*D23))/D0
 E = -2*(rhohat2.dot(R2))
 F = np.linalg.norm(R2)**2
 
+#get roots and ask user
 roota = -(A**2 + A*E + F)
 rootb = -(2*A*B + B*E)
 rootc = -(B**2)
 
-#get roots and ask user
 coeffs=[rootc,0,0,rootb,0,0,roota,0,1]
 roots=np.polynomial.polynomial.polyroots(coeffs)
 realRoots = []
@@ -173,13 +181,18 @@ for i in range(len(roots)):
     if np.imag(roots[i]) == 0 and np.real(roots[i]) > 0:
         realRoots.append(float(np.real(roots[i])))
 print(realRoots)
+
+#matplotlib
 r = np.arange(0.6, 1.7, 0.01)
 plt.plot(r, r**8 + roota*r**6 + rootb*r**3 + rootc, '-')
 plt.plot(r, r-r, '-')
 plt.plot(realRoots, [0,0,0], 'bs')
+plt.xlabel('|r| (AU)')
+plt.title('Roots of |r| Polynomial')
+plt.grid(True)
 plt.show()
+
 pick = eval(input("Pick a root to try by index: "))
-##pick = 2
 rmag = realRoots[int(pick)]
 
 u = 1/rmag**3
@@ -216,10 +229,12 @@ tau1c = tau1
 tau3c = tau3
 tauc = tau
 
-#Iteration
-print()
-print("--------------------------------------------------------------------------")
-print("Beginning Iteration")
+#MAIN ITERATION
+print("""
+--------------------------------------------------------------------------
+Beginning Iteration
+Tolerance: %s
+--------------------------------------------------------------------------""" % (tolerance))
 while abs(rOld-rmag) > tolerance:
     counter += 1
 
@@ -252,10 +267,10 @@ while abs(rOld-rmag) > tolerance:
     g3 = tau3c+(sin(x3)-x3)/n
 
     #truncated f+g taylor series
-##    u = 1/rmag**3
-##    z = r2.dot(r2dot)/rmag/rmag
-##    q = r2dot.dot(r2dot)/rmag/rmag-u
-##    f1 = 1-
+    #u = 1/rmag**3
+    #z = r2.dot(r2dot)/rmag/rmag
+    #q = r2dot.dot(r2dot)/rmag/rmag-u
+    #f1 = 1-
 
     C1 = g3/(f1*g3-f3*g1)
     C3 = -g1/(f1*g3-f3*g1)
@@ -272,9 +287,10 @@ while abs(rOld-rmag) > tolerance:
     r3 = rhohat3 * rho3 - R3
     r2dot = d1*r1 + d3*r3
 
-    #debug
     rOld = rmag + 0
     rmag = np.linalg.norm(r2)
+
+    #debug
     print("Iteration %s: delta r = %s" % (counter, abs(rmag-rOld)))
 
     #light time correction
@@ -321,14 +337,12 @@ Me: %s""" % orbEl #tE, a, e, degrees(i), degrees(o), degrees(w), degrees(Me)
 
 output = str1 + str2
 print(output)
-print("--------------------------------------------------------------------------")
-print()
+print("--------------------------------------------------------------------------\n")
 printOpt = input("Do you want to save results to file? (y/n): ").lower()
 if printOpt == "y":
     f = open("%s_initialODresults.txt" % asteroidDes, "w")
     f.write(output)
     f.close()
     print('File Created!: %s_initialODresults.txt' % asteroidDes)
-print()
-print("--------------------------------------------------------------------------")
+print("\n--------------------------------------------------------------------------")
 input("Press 'Enter' to exit")
