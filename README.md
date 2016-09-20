@@ -12,4 +12,4 @@ Run the code from the command line like so:
 
 You will be prompted to pick a root by the program after a second. Pick a distance (in AU) that is reasonable for the class of asteroid you are observing. Wait for the code to run through the iteration and print out your data at the end if you feel the need. 
 
-For more information about the Method of Gauss and the calculations contained within, please consult the included PDF.
+For more information about the Method of Gauss and the calculations contained within, please consult [this document](https://www.overleaf.com/read/ywydpqpzxhnk).
