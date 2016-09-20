@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='utf-8'?>
+<interface>
+  <object class="tk.Toplevel" id="Toplevel_1">
+    <property name="height">200</property>
+    <property name="width">200</property>
+    <child>
+      <object class="ttk.Frame" id="Frame_1">
+        <property name="borderwidth">10</property>
+        <property name="height">200</property>
+        <property name="width">200</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="propagate">True</property>
+          <property name="row">0</property>
+        </layout>
+        <child>
+          <object class="tk.Button" id="Button_1">
+            <property name="text" translatable="yes">Load Observations</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.LabelFrame" id="LabelFrame_2">
+            <property name="height">200</property>
+            <property name="text" translatable="yes">LabelFrame_2</property>
+            <property name="width">200</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="propagate">True</property>
+              <property name="row">1</property>
+            </layout>
+            <child>
+              <object class="tk.Radiobutton" id="Radiobutton_3">
+                <property name="indicatoron">true</property>
+                <property name="state">normal</property>
+                <property name="text" translatable="yes">Radiobutton_3</property>
+                <property name="value">True</property>
+                <property name="variable">string:method</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="propagate">True</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Radiobutton" id="Radiobutton_4">
+                <property name="state">normal</property>
+                <property name="text" translatable="yes">Radiobutton_4</property>
+                <property name="value">False</property>
+                <property name="variable">string:method</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="propagate">True</property>
+                  <property name="row">1</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Entry" id="Entry_1">
+            <property name="text" translatable="yes">Entry_1</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="propagate">True</property>
+              <property name="row">2</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="Label_3">
+            <property name="text" translatable="yes">Label_3</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="propagate">True</property>
+              <property name="row">3</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="tk.LabelFrame" id="LabelFrame_3">
+        <property name="height">200</property>
+        <property name="text" translatable="yes">LabelFrame_3</property>
+        <property name="width">200</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="propagate">True</property>
+          <property name="row">1</property>
+        </layout>
+        <child>
+          <object class="tk.Text" id="Text_4">
+            <property name="height">10</property>
+            <property name="text" translatable="yes">Text_4</property>
+            <property name="width">50</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
